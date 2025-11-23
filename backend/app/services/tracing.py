@@ -1,6 +1,9 @@
 import cv2
 import numpy as np
-import potrace
+import subprocess
+import os
+import uuid
+import xml.etree.ElementTree as ET
 
 def extract_glyphs(img_bytes: bytes) -> dict:
     # Decode image
@@ -13,25 +16,7 @@ def extract_glyphs(img_bytes: bytes) -> dict:
     # Threshold (Inverted: Text is white, background black)
     _, binary = cv2.threshold(img, 128, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)
     
-    # Find contours to detect grid cells
-    # We assume the template has visible boxes.
-    # If not, we might need a different strategy (e.g. fixed grid slicing).
-    # For now, let's assume we just find connected components which are likely the letters themselves 
-    # if the user cropped them, OR we find the boxes.
-    
-    # Better strategy for MVP without known template:
-    # Just find all contours, assume they are letters, sort them reading-order.
-    # This is risky if there are noise or box lines.
-    
-    # Let's assume the user uploads a clean scan of the template.
-    # We'll try to find the grid boxes.
-    # In a real app, we'd probably use ArUco markers or a strict template.
-    
-    # Fallback: Fixed grid slicing.
-    # Assume the image is the template.
-    # Grid: 7 rows, 9 cols? (63 chars)
-    # Charset: A-Z, a-z, 0-9 (62 chars)
-    
+    # Grid logic
     h, w = img.shape
     rows = 7
     cols = 9
@@ -49,7 +34,6 @@ def extract_glyphs(img_bytes: bytes) -> dict:
         y = r * cell_h
         
         # Extract cell
-        # Add some padding to avoid border lines if they exist
         pad_x = int(cell_w * 0.1)
         pad_y = int(cell_h * 0.1)
         
@@ -59,31 +43,44 @@ def extract_glyphs(img_bytes: bytes) -> dict:
         if cv2.countNonZero(roi) == 0:
             continue
             
-        # Trace
-        # Create a bitmap from the binary ROI
-        # Potrace expects 0/1, we have 0/255
-        bmp = potrace.Bitmap(roi / 255.0)
-        path = bmp.trace()
+        # Potrace needs black text on white background
+        # We have white text on black background (roi)
+        # So invert it
+        roi_inv = cv2.bitwise_not(roi)
         
-        if not path:
-            continue
+        tmp_id = str(uuid.uuid4())
+        bmp_path = f"/tmp/{tmp_id}.bmp"
+        svg_path = f"/tmp/{tmp_id}.svg"
+        
+        try:
+            cv2.imwrite(bmp_path, roi_inv)
             
-        svg_d = []
-        for curve in path:
-            start = curve.start_point
-            svg_d.append(f"M {start.x} {start.y}")
-            for segment in curve:
-                if segment.is_corner:
-                    c = segment.c
-                    end = segment.end_point
-                    svg_d.append(f"L {c.x} {c.y} L {end.x} {end.y}")
-                else:
-                    c1 = segment.c1
-                    c2 = segment.c2
-                    end = segment.end_point
-                    svg_d.append(f"C {c1.x} {c1.y} {c2.x} {c2.y} {end.x} {end.y}")
-            svg_d.append("Z")
+            # Run potrace
+            # -s: SVG
+            # --flat: simpler paths
+            subprocess.run(["potrace", "-s", "--flat", "-o", svg_path, bmp_path], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             
-        results[char] = " ".join(svg_d)
+            if os.path.exists(svg_path):
+                tree = ET.parse(svg_path)
+                root = tree.getroot()
+                # Namespace handling
+                # SVG usually has a namespace
+                ns = {'svg': 'http://www.w3.org/2000/svg'}
+                
+                paths = []
+                # Find all paths
+                for path in root.findall(".//{http://www.w3.org/2000/svg}path"):
+                    d = path.get('d')
+                    if d:
+                        paths.append(d)
+                
+                if paths:
+                    results[char] = " ".join(paths)
+                    
+        except Exception as e:
+            print(f"Error tracing {char}: {e}")
+        finally:
+            if os.path.exists(bmp_path): os.remove(bmp_path)
+            if os.path.exists(svg_path): os.remove(svg_path)
         
     return results

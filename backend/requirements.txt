@@ -3,7 +3,7 @@ uvicorn
 celery
 redis
 opencv-python-headless
-pypotrace
+opencv-python-headless
 fonttools
 numpy
 python-multipart

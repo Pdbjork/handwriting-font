@@ -4,7 +4,7 @@ COPY backend/requirements.txt .
 RUN apt-get update && apt-get install -y \
     build-essential \
     pkg-config \
-    libpotrace-dev \
+    potrace \
     libffi-dev \
     && rm -rf /var/lib/apt/lists/*
 RUN pip install -r requirements.txt
