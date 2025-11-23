@@ -12,6 +12,11 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, '')
       },
+      '/ws': {
+        target: 'http://api:8000',
+        ws: true,
+        changeOrigin: true
+      },
       '/download': {
         target: 'http://api:8000',
         changeOrigin: true

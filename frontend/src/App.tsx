@@ -17,10 +17,10 @@ export default function App() {
       setJobId(job_id);
       setProgress("QUEUED");
 
-      // WebSocket connection
-      // Use wss if https, ws if http
+      // WebSocket connection - connect directly to API port 8000
+      // (Vite proxy doesn't handle WebSocket upgrades well)
       const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const ws = new WebSocket(`${protocol}//${location.host}/api/ws/${job_id}`);
+      const ws = new WebSocket(`${protocol}//${location.host}/ws/${job_id}`);
 
       ws.onmessage = (ev) => {
         const data = JSON.parse(ev.data);

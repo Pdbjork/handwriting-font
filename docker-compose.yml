@@ -4,6 +4,8 @@ services:
     build: .
     command: uvicorn backend.app.main:app --host 0.0.0.0 --port 8000
     depends_on: [ redis ]
+    ports:
+      - "8000:8000"
     volumes:
       - generated:/code/backend/app/generated
   worker:

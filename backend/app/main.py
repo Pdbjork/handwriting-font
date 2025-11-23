@@ -37,16 +37,23 @@ async def upload(sample: UploadFile):
 @app.websocket("/ws/{job_id}")
 async def ws_status(ws: WebSocket, job_id: str):
     await ws.accept()
-    while True:
-        data = redis_client.hget("jobs", job_id)  # set by Celery task
-        if data:
-            status = json.loads(data)
-            await ws.send_json(status)
-            if status.get("state") == "DONE":
-                break
-        await asyncio.sleep(1)
+    try:
+        while True:
+            data = redis_client.hget("jobs", job_id)  # Returns bytes
+            if data:
+                # Decode bytes to string, then parse JSON
+                status = json.loads(data.decode('utf-8'))
+                await ws.send_json(status)
+                if status.get("state") == "DONE":
+                    break
+            else:
+                # Job not found yet, send waiting status
+                await ws.send_json({"state": "WAITING"})
+            await asyncio.sleep(1)
+    except Exception as e:
+        print(f"WebSocket error for job {job_id}: {e}")
+        await ws.close()
 
 # Serve frontend in production (mount last so routes take precedence)
 if os.path.exists("/static"):
     app.mount("/", StaticFiles(directory="/static", html=True), name="static")
-
