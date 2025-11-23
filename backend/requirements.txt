@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+celery
+redis
+opencv-python-headless
+pypotrace
+fonttools
+numpy
+python-multipart
+requests

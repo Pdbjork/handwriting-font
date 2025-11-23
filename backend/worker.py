@@ -1,5 +1,5 @@
-from .celery_app import celery_app
-from .services import tracing, fontbuild
+from .app.celery_app import celery_app
+from .app.services import tracing, fontbuild
 import redis, json
 
 @celery_app.task(name="tasks.build_font")
