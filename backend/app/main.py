@@ -15,18 +15,16 @@ app = FastAPI()
 os.makedirs("backend/app/generated", exist_ok=True)
 app.mount("/download", StaticFiles(directory="backend/app/generated"), name="download")
 
-# Serve frontend in production
-if os.path.exists("/static"):
-    app.mount("/", StaticFiles(directory="/static", html=True), name="static")
-
 # Redis client
 redis_client = redis.Redis(host="redis", port=6379, db=0)
 
 @app.get("/template")
 def get_template():
     # returns printable PNG/PDF grid
-    # Ensure assets directory exists
-    return FileResponse("backend/app/assets/template.pdf")
+    template_path = "/code/backend/app/assets/template.pdf"
+    if not os.path.exists(template_path):
+        return {"error": "Template not found"}
+    return FileResponse(template_path)
 
 @app.post("/upload")
 async def upload(sample: UploadFile):
@@ -47,3 +45,8 @@ async def ws_status(ws: WebSocket, job_id: str):
             if status.get("state") == "DONE":
                 break
         await asyncio.sleep(1)
+
+# Serve frontend in production (mount last so routes take precedence)
+if os.path.exists("/static"):
+    app.mount("/", StaticFiles(directory="/static", html=True), name="static")
+

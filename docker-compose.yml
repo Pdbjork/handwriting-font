@@ -3,14 +3,23 @@ services:
   api:
     build: .
     command: uvicorn backend.app.main:app --host 0.0.0.0 --port 8000
-    depends_on: [redis]
+    depends_on: [ redis ]
+    volumes:
+      - generated:/code/backend/app/generated
   worker:
     build: .
     command: celery -A backend.worker worker -l info
-    depends_on: [redis]
+    depends_on: [ redis ]
+    volumes:
+      - generated:/code/backend/app/generated
   redis:
     image: redis:7-alpine
   web:
     build: ./frontend
     command: npm run dev
-    ports: ["5173:5173"]
+    ports: [ "5173:5173" ]
+
+volumes:
+  generated:
+
+
