@@ -55,6 +55,7 @@ export default function App() {
 
       {progress && (
         <div className="status">
+          {jobId && <p>Job ID: <small>{jobId}</small></p>}
           <p>Status: <strong>{progress}</strong></p>
           {progress === "DONE" && (
             <p>Downloading font...</p>
@@ -64,3 +65,4 @@ export default function App() {
     </div>
   );
 }
+
