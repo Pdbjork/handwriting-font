@@ -58,10 +58,12 @@ def create_template(filename):
             # Draw cell border
             c.rect(x, y - cell_height, cell_width, cell_height)
             
-            # Draw character label (small, in corner)
+            # Draw character label (small, centered below)
             c.setFont("Helvetica", 8)
             c.setFillColorRGB(0.5, 0.5, 0.5)
-            c.drawString(x + 2, y - 10, chars[char_index])
+            # y - cell_height is the bottom of the box
+            # Draw slightly below that
+            c.drawCentredString(x + cell_width/2, y - cell_height - 10, chars[char_index])
             
             char_index += 1
     

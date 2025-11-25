@@ -49,7 +49,7 @@ export default function App() {
 
         <label className="btn primary">
           Upload Scan
-          <input type="file" accept="image/*" onChange={handleUpload} hidden />
+          <input type="file" accept="image/*,application/pdf" onChange={handleUpload} hidden />
         </label>
       </div>
 
@@ -58,7 +58,10 @@ export default function App() {
           {jobId && <p>Job ID: <small>{jobId}</small></p>}
           <p>Status: <strong>{progress}</strong></p>
           {progress === "DONE" && (
-            <p>Downloading font...</p>
+            <div>
+              <p>Font generated!</p>
+              <a href={`/api/download/${jobId}.otf`} target="_blank" className="btn primary">Download Font</a>
+            </div>
           )}
         </div>
       )}

@@ -21,7 +21,8 @@ redis_client = redis.Redis(host="redis", port=6379, db=0)
 @app.get("/template")
 def get_template():
     # returns printable PNG/PDF grid
-    template_path = "/code/backend/app/assets/template.pdf"
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    template_path = os.path.join(base_dir, "assets", "template.pdf")
     if not os.path.exists(template_path):
         return {"error": "Template not found"}
     return FileResponse(template_path)

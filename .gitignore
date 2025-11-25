@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+.venv/
+backend/app/generated/
+*.png
+*.jpg
+*.bmp
+.DS_Store

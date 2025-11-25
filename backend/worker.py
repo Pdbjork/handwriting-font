@@ -8,5 +8,5 @@ def build_font(job_id: str, img_bytes: bytes):
     redis_client.hset("jobs", job_id, json.dumps({"state":"TRACING"}))
     svg_map = tracing.extract_glyphs(img_bytes)
     redis_client.hset("jobs", job_id, json.dumps({"state":"BUILDING"}))
-    ttf_path = fontbuild.make_font(svg_map, job_id)
-    redis_client.hset("jobs", job_id, json.dumps({"state":"DONE", "path": ttf_path}))
+    otf_path = fontbuild.make_font(svg_map, job_id)
+    redis_client.hset("jobs", job_id, json.dumps({"state":"DONE", "path": otf_path}))
