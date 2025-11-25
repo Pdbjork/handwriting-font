@@ -2,7 +2,7 @@
 AI-assisted browser-based handwriting font generator
 # ✍️ Handwriting‑Font Generator
 
-A browser‑based tool that lets anyone upload (or draw) their handwriting and instantly download a fully installable `.ttf / .woff` font.\
+A browser‑based tool that lets anyone upload (or draw) their handwriting and instantly download a fully installable `.ttf / .otf` font.\
 Built with **FastAPI + Celery + React (Vite)** and shipped as a single Docker stack.
 
 ---
