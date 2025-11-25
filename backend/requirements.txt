@@ -8,3 +8,4 @@ fonttools
 numpy
 python-multipart
 requests
+websockets
